@@ -50,18 +50,27 @@
 
     if (length(pth) >= 4)     % has to be at least 2 images to corregister.
 
-        he_path = 'Users\nikitselepidakis\Documents\MATLAB\Dartmouth Internship 2016\# # Coregistration\Test Images\'
+        he_path = 'Users\nikitselepidakis\Documents\MATLAB\Dartmouth Internship 2016\# # Coregistration\Test Images\';
         imHE.fname = filename(1:end-4);
     
         
         % CHANGE IF H&E IMAGE IS ROTATED COMPARED WITH FLUORESCENCE IMAGE.
-        imHE.I = fliplr( flipud(imread([pth{4} '.TIF'])) );
+        imHE.I = rot90( imread([pth{4} '.TIF']),2 );
         %   imHE.I = flipud(imread([pth{4} '.TIF']));
             %imHE.I = ((imread([pth{4} '.TIF'])) );
 %         imHE.I = rot90(fliplr(imread([pth{4} '.TIF'])));
         
-        [new] = grow_tumor(imHE.I)
-        imHE.I = new
+        growth_tumor = 1.05; % desired level of tumor growth
+        growth_necrotic = 1.1; % desired level of necrotic tumor growth
+        
+        necrosis_choice = questdlg('Does the brain tumor contain necrotic tumor tissue?','Liquified necrotic tumor tissue?','Yes','No','Yes');
+        switch necrosis_choice
+            case 'Yes'
+                [new] = grow_both(imHE.I, growth_tumor, growth_necrotic);
+            case 'No'
+                [new] = grow_tumor(imHE.I, growth_tumor);
+        end
+        imHE.I = new;
         
         h2 = imagesc(imHE.I); axis image; axis off; drawnow;
 
@@ -83,32 +92,32 @@
         im_blend = cat( 3,4.* ( nm(im2a.I_a)) .* 0.5,zeros(size(im1a.I_a)), 5.* nm(im1a.I_a) );
         imagesc(im_blend); axis image; axis off;
         
-        a = 0
-        xx = 0
-        x = 0
-        while a ~= 'no'
-            xx = inputdlg(['x translation is ' num2str(x) '. Enter new x translation. If satisfied, enter no.'], 'x translation', 1, {num2str(x)});
-            if strcmp(xx{1}, 'no')
-                a = 'no'
+        a = 0;
+        xx = 0;
+        x = 0;
+        while a ~= 'yes'
+            xx = inputdlg(['x translation is ' num2str(x) '. Enter new x translation. If satisfied, enter yes.'], 'x translation', 1, {num2str(x)});
+            if strcmp(xx{1}, 'yes')
+                a = 'yes';
             else
-                x = str2num(xx{1})
-                T = [x 0]
+                x = str2num(xx{1});
+                T = [x 0];
                 [ im1a, im2a ] = imalign( im1, im2, 0, T ); 
                 im_blend = cat( 3,4.* ( nm(im2a.I_a)) .* 0.5,zeros(size(im1a.I_a)), 5.* nm(im1a.I_a) );
                 imagesc(im_blend); axis image; axis off;
             end
         end
         
-        a = 0
-        yy = 0
-        y = 0
-        while a ~= 'no'
-            yy = inputdlg(['y translation is ' num2str(y) '. Enter new y translation. If satisfied, enter no. '], 'y translation', 1, {num2str(y)});
-            if strcmp(yy{1}, 'no')
-                a = 'no'
+        a = 0;
+        yy = 0;
+        y = 0;
+        while a ~= 'yes'
+            yy = inputdlg(['y translation is ' num2str(y) '. Enter new y translation. If satisfied, enter yes. '], 'y translation', 1, {num2str(y)});
+            if strcmp(yy{1}, 'yes')
+                a = 'yes';
             else
-                y = str2num(yy{1})
-                T = [x y]
+                y = str2num(yy{1});
+                T = [x y];
                 [ im1a, im2a ] = imalign( im1, im2, 0, T ); 
                 im_blend = cat( 3,4.* ( nm(im2a.I_a)) .* 0.5,zeros(size(im1a.I_a)), 5.* nm(im1a.I_a) );
                 imagesc(im_blend); axis image; axis off;
@@ -125,39 +134,39 @@
 
         % create 3-channel fusion.
         
-        im_blend = im3
+        im_blend = im3;
         im_blend = cat(3, 1.8.*nm(im3a.I_a), 1.2.* nm(im1a.I_a), 0.7 .* nm(im2a.I_a).^1.5);
         imagesc(im_blend); axis image; axis off
         
-        a = 0
-        xx = 0
-        x = 0
-        while a ~= 'no'
-            xx = inputdlg(['x translation is ' num2str(x) '. Enter new x translation. If satisfied, enter no. '], 'x translation', 1, {num2str(x)});
-            if strcmp(xx{1}, 'no')
-                a = 'no'
+        a = 0;
+        xx = 0;
+        x = 0;
+        while a ~= 'yes'
+            xx = inputdlg(['x translation is ' num2str(x) '. Enter new x translation. If satisfied, enter yes. '], 'x translation', 1, {num2str(x)});
+            if strcmp(xx{1}, 'yes')
+                a = 'yes';
             else
-                x = str2num(xx{1})
-                T = [x 0]
+                x = str2num(xx{1});
+                T = [x 0];
                 [ ~, im3a ] = imalign( im1, im3, 0, T );
-                im_blend = im3
+                im_blend = im3;
                 im_blend = cat(3, 1.8.*nm(im3a.I_a), 1.2.* nm(im1a.I_a), 0.7 .* nm(im2a.I_a).^1.5);
                 imagesc(im_blend); axis image; axis off
             end
         end
         
-        a = 0
-        yy = 0
-        y = 0
-        while a ~= 'no'
-            yy = inputdlg(['y translation is ' num2str(y) '. Enter new y translation. If satisfied, enter no. '], 'y translation', 1, {num2str(y)});
-            if strcmp(yy{1}, 'no')
-                a = 'no'
+        a = 0;
+        yy = 0;
+        y = 0;
+        while a ~= 'yes'
+            yy = inputdlg(['y translation is ' num2str(y) '. Enter new y translation. If satisfied, enter yes. '], 'y translation', 1, {num2str(y)});
+            if strcmp(yy{1}, 'yes')
+                a = 'yes';
             else
-                y = str2num(yy{1})
-                T = [x y]
+                y = str2num(yy{1});
+                T = [x y];
                 [ ~, im3a ] = imalign( im1, im3, 0, T );
-                im_blend = im3
+                im_blend = im3;
                 im_blend = cat(3, 1.8.*nm(im3a.I_a), 1.2.* nm(im1a.I_a), 0.7 .* nm(im2a.I_a).^1.5);
                 imagesc(im_blend); axis image; axis off
             end
@@ -482,7 +491,6 @@
 % 
 % for i = 1:10
 %     
-% 
 % 
 % 
 % 
