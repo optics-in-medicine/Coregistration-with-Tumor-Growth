@@ -1,10 +1,10 @@
-function [new] = grow_tumor(I, growth_tumor)
-% grows the tumor in the image I
-
-I = imresize(I,0.5);
-% I = imresize(rot90(imread('501B_1.tif'),2), .3); % load brain image
+function [new] = grow_necrotic_tumor(I, growth_necrotic) 
+% grows the liquified nectrotic tumor tissue in the image I
+ 
+I = imresize(I,0.5); 
+% I = imresize(rot90(imread('501B_1.tif'),2), .6); % load brain image
 % I = imread('410B.tif'); % load brain image
-figure('Name','Draw a boundary of the tumor'), imshow(I); title('trace around the tumor'); % display brain image
+figure('Name','Draw a boundary of the liquified necrotic tumor tissue'), imshow(I); title('trace around the white area'); % display brain image
 ROI = imfreehand(); % outline tumor
 
 mask = ROI.createMask(); % binary mask of tumor area
@@ -21,7 +21,10 @@ drawnow; % shows brain image with blue outline of tumor
 % burned = I;
 % burned(mask) = 255; % brain image with the tumor colored pink
 
-maskedRgbImage = bsxfun(@times, I, cast(mask,'like', I)); % blacks out tumor's surroundings
+maskedRgbImage0 = bsxfun(@times, I, cast(mask,'like', I)); % blacks out tumor's surroundings
+se = strel('disk',5);
+maskedRgbImage = imdilate(maskedRgbImage0, se);
+maskedRgbImage = imerode(maskedRgbImage, se);
 M = repmat(all(~maskedRgbImage,3),[1 1 3]);
 maskedRgbImage(M) = 255; % whites out everything but the tumor
 
@@ -33,8 +36,8 @@ maskedRgbImage(M) = 255; % whites out everything but the tumor
 % height = right - left + 1; % height of the tumor
 % cropped = imcrop(maskedRgbImage, [top, left, width, height]); % crops image to only show tumor
 
-large = imresize(maskedRgbImage, growth_tumor); % enlarge image so tumor enlarges by growth factor
-com2 = growth_tumor.*com1; % calculate the center of mass of the new image's tumor
+large = imresize(maskedRgbImage, growth_necrotic); % enlarge image so tumor enlarges by growth factor
+com2 = growth_necrotic.*com1; % calculate the center of mass of the new image's tumor
 
 xdiff = com2(1)-com1(1); % compute the change in the center of mass's x-coordinate
 ydiff = com2(2)-com1(2); % compute the change in the center of mass's y-coordinate
